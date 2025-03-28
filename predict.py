@@ -28,3 +28,41 @@ if __name__ == "__main__":
         print(f"The estimated price for a car with {mileage} km is: {estimated_price:.2f}")
     except ValueError:
         print("Invalid input. Please enter a numeric value for mileage.")
+
+# import pandas as pd
+
+# def estimate_price(mileage, theta0, theta1):
+#     """Calculate the estimated price using the linear regression model."""
+#     return theta0 + (theta1 * mileage)
+
+# def gradient_descent(x, y, theta0, theta1, learning_rate, iterations):
+#     """Perform gradient descent to optimize theta0 and theta1."""
+#     m = len(x)  # Number of data points
+#     for _ in range(iterations):
+#         # Calculate the temporary values for theta0 and theta1
+#         tmp_theta0 = learning_rate * (1 / m) * sum(estimate_price(x[i], theta0, theta1) - y[i] for i in range(m))
+#         tmp_theta1 = learning_rate * (1 / m) * sum((estimate_price(x[i], theta0, theta1) - y[i]) * x[i] for i in range(m))
+        
+#         # Simultaneously update theta0 and theta1
+#         theta0 -= tmp_theta0
+#         theta1 -= tmp_theta1
+    
+#     return theta0, theta1
+
+# if __name__ == "__main__":
+#     # Load the dataset
+#     data = pd.read_csv('data.csv')
+#     x = data['km'].tolist()
+#     y = data['price'].tolist()
+
+#     # Initialize parameters
+#     theta0 = 0.0
+#     theta1 = 0.0
+#     learning_rate = 0.01  # Small step size
+#     iterations = 1000  # Number of iterations
+
+#     # Perform gradient descent
+#     theta0, theta1 = gradient_descent(x, y, theta0, theta1, learning_rate, iterations)
+
+#     print(f"Optimized Theta0: {theta0}")
+#     print(f"Optimized Theta1: {theta1}")
