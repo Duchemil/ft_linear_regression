@@ -23,6 +23,10 @@ if n > 0:
     # Calculate the intercept (theta0)
     theta0 = mean_y - thet1 * mean_x
 
+    with open('model.txt', 'w') as file:
+        file.write(f"theta0: {theta0}\n")
+        file.write(f"theta1: {thet1}\n")
+
     # Clear the console
     print("\033[H\033[J", end="")
     print(f"Theta0 (Intercept): {theta0}, Theta1 (Slope): {thet1}")
