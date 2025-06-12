@@ -18,21 +18,21 @@ if n > 0:
     # Calculate the slope (thet1)
     numerator = sum((x[i] - mean_x) * (y[i] - mean_y) for i in range(n))
     denominator = sum((x[i] - mean_x) ** 2 for i in range(n))
-    thet1 = numerator / denominator
+    theta1 = numerator / denominator
 
     # Calculate the intercept (theta0)
-    theta0 = mean_y - thet1 * mean_x
+    theta0 = mean_y - theta1 * mean_x
 
     with open('model.txt', 'w') as file:
         file.write(f"theta0: {theta0}\n")
-        file.write(f"theta1: {thet1}\n")
+        file.write(f"theta1: {theta1}\n")
 
     # Clear the console
     print("\033[H\033[J", end="")
-    print(f"Theta0 (Intercept): {theta0}, Theta1 (Slope): {thet1}")
+    print(f"Theta0 (Intercept): {theta0}, Theta1 (Slope): {theta1}")
 
     plt.scatter(x, y)
-    regression_line = [theta0 + thet1 * i for i in x]
+    regression_line = [theta0 + theta1 * i for i in x]
     plt.plot(x, regression_line, color='red', label='Regression Line')
     plt.xlabel('Km')
     plt.ylabel('Price')
