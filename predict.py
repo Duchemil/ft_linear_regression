@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+result_training = []
+
 def load_model(file_path):
     """Load theta0 and theta1 from the model file."""
     try:
@@ -41,13 +43,15 @@ def estimate_price(mileage, theta0, theta1):
 def gradient_descent(x, y, theta0, theta1, learning_rate, iterations):
     """Perform gradient descent to optimize theta0 and theta1."""
     m = len(x)  # Number of data points
-    mean_x = sum(x) / len(x)
-    std_x = (sum((xi - mean_x) ** 2 for xi in x) / len(x)) ** 0.5
-    x_scaled = [(xi - mean_x) / std_x for xi in x]
+    
+    x_max = max(x)
+    y_max = max(y)
+    x_norm = [xi / x_max for xi in x]
+    y_norm = [yi / y_max for yi in y]
     for _ in range(iterations):
         # Calculate the temporary values for theta0 and theta1
-        tmp_theta0 = learning_rate * (1 / m) * sum(estimate_price(x_scaled[i], theta0, theta1) - y[i] for i in range(m))
-        tmp_theta1 = learning_rate * (1 / m) * sum((estimate_price(x_scaled[i], theta0, theta1) - y[i]) * x_scaled[i] for i in range(m))
+        tmp_theta0 = learning_rate * (1 / m) * sum(estimate_price(x_norm[i], theta0, theta1) - y_norm[i] for i in range(m))
+        tmp_theta1 = learning_rate * (1 / m) * sum((estimate_price(x_norm[i], theta0, theta1) - y_norm[i]) * x_norm[i] for i in range(m))
         
         # Simultaneously update theta0 and theta1
         theta0 -= tmp_theta0
@@ -69,16 +73,3 @@ if __name__ == "__main__":
 
     # Perform gradient descent
     theta0, theta1 = gradient_descent(x, y, theta0, theta1, learning_rate, iterations)
-
-    print(f"Optimized Theta0: {theta0}")
-    print(f"Optimized Theta1: {theta1}")
-
-    # Plot the data and the regression line
-    plt.scatter(x, y, label='Data Points')
-    regression_line = [theta0 + theta1 * xi for xi in x]
-    plt.plot(x, regression_line, color='red', label='Regression Line')
-    plt.xlabel('Km')
-    plt.ylabel('Price')
-    plt.legend()
-    plt.title('Linear Regression with Optimized Thetas')
-    plt.show()
