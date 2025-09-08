@@ -1,45 +1,61 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-try:
+result_training = []
+
+def load_model(file_path):
+    """Load theta0 and theta1 from the model file."""
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+            theta0 = float(lines[0].split(":")[1].strip())
+            theta1 = float(lines[1].split(":")[1].strip())
+        return theta0, theta1
+    except FileNotFoundError:
+        print("Model file not found. Using default values for theta0 and theta1.")
+        return 0.0, 0.0
+    except Exception as e:
+        print(f"An error occurred while loading the model: {e}")
+        return 0.0, 0.0
+
+import pandas as pd
+
+def estimate_price(mileage, theta0, theta1):
+    """Calculate the estimated price using the linear regression model."""
+    return theta0 + (theta1 * mileage)
+
+def gradient_descent(x, y, theta0, theta1, learning_rate, iterations):
+    """Perform gradient descent to optimize theta0 and theta1."""
+    m = len(x)  # Number of data points
+    
+    x_max = max(x)
+    y_max = max(y)
+    x_norm = [xi / x_max for xi in x]
+    y_norm = [yi / y_max for yi in y]
+    for _ in range(iterations):
+        # Calculate the temporary values for theta0 and theta1
+        tmp_theta0 = learning_rate * (1 / m) * sum(estimate_price(x_norm[i], theta0, theta1) - y_norm[i] for i in range(m))
+        tmp_theta1 = learning_rate * (1 / m) * sum((estimate_price(x_norm[i], theta0, theta1) - y_norm[i]) * x_norm[i] for i in range(m))
+        
+        # Simultaneously update theta0 and theta1
+        theta0 -= tmp_theta0
+        theta1 -= tmp_theta1
+    
+    return theta0, theta1
+
+if __name__ == "__main__":
+    # Load the dataset
     data = pd.read_csv('data.csv')
     x = data['km'].tolist()
     y = data['price'].tolist()
-except Exception as e:
-    print("\033[H\033[J", end="")
-    print("An error occurred while processing the data.")
+    print("Theta0 : ", theta0)
 
+    # Initialize parameters
+    theta0 = 0.0
+    theta1 = 0.0
+    learning_rate = 0.1  # Small step size
+    iterations = 1000  # Number of iterations
 
-n = len(x)
-if n > 0:
-    mean_x = sum(x) / n
-    mean_y = sum(y) / n
-
-    # Calculate the slope (thet1)
-    numerator = sum((x[i] - mean_x) * (y[i] - mean_y) for i in range(n))
-    denominator = sum((x[i] - mean_x) ** 2 for i in range(n))
-    theta1 = numerator / denominator
-
-    # Calculate the intercept (theta0)
-    theta0 = mean_y - theta1 * mean_x
-
-    with open('model.txt', 'w') as file:
-        file.write(f"theta0: {theta0}\n")
-        file.write(f"theta1: {theta1}\n")
-
-    # Clear the console
-    print("\033[H\033[J", end="")
-    print(f"Theta0 (Intercept): {theta0}, Theta1 (Slope): {theta1}")
-
-    plt.scatter(x, y)
-    regression_line = [theta0 + theta1 * i for i in x]
-    plt.plot(x, regression_line, color='red', label='Regression Line')
-    plt.xlabel('Km')
-    plt.ylabel('Price')
-    plt.legend()
-    plt.title('Linear Regression')
-    plt.show()
-else:
-    # Clear the console and print no data points
-    print("\033[H\033[J", end="")
-    print("No data points available for regression.")
+    # Perform gradient descent
+    theta0, theta1 = gradient_descent(x, y, theta0, theta1, learning_rate, iterations)
+    print(f"Optimized Theta0 (Intercept): {theta0}, Theta1 (Slope): {theta1}")
