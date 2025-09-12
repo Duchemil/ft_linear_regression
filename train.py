@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import csv
 
 result_training = []
 
@@ -18,8 +19,6 @@ def load_model(file_path):
         print(f"An error occurred while loading the model: {e}")
         return 0.0, 0.0
 
-import pandas as pd
-
 def estimate_price(mileage, theta0, theta1):
     """Calculate the estimated price using the linear regression model."""
     return theta0 + (theta1 * mileage)
@@ -32,23 +31,42 @@ def gradient_descent(x, y, theta0, theta1, learning_rate, iterations):
     y_max = max(y)
     x_norm = [xi / x_max for xi in x]
     y_norm = [yi / y_max for yi in y]
-    for _ in range(iterations):
+    
+    for i in range(1, iterations + 1):
         # Calculate the temporary values for theta0 and theta1
-        tmp_theta0 = learning_rate * (1 / m) * sum(estimate_price(x_norm[i], theta0, theta1) - y_norm[i] for i in range(m))
-        tmp_theta1 = learning_rate * (1 / m) * sum((estimate_price(x_norm[i], theta0, theta1) - y_norm[i]) * x_norm[i] for i in range(m))
+        tmp_theta0 = learning_rate * (1 / m) * sum(estimate_price(x_norm[j], theta0, theta1) - y_norm[j] for j in range(m))
+        tmp_theta1 = learning_rate * (1 / m) * sum((estimate_price(x_norm[j], theta0, theta1) - y_norm[j]) * x_norm[j] for j in range(m))
         
         # Simultaneously update theta0 and theta1
         theta0 -= tmp_theta0
         theta1 -= tmp_theta1
+        
+        # Record theta values at specified steps
+        if i in {1, 10, 100, 1000}:
+            result_training.append((i, theta0, theta1))
     
-    return theta0, theta1
+    return theta0, theta1, result_training
+
+def save_model(file_path, theta0, theta1):
+    with open(file_path, 'w') as f:
+        f.write(f"theta0: {theta0}\n")
+        f.write(f"theta1: {theta1}\n")
+
+def save_history_csv(file_path, history_norm, x_max, y_max):
+    """Save (iteration, theta0, theta1) in original scale for plotting."""
+    with open(file_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['iteration', 'theta0', 'theta1'])
+        for it, t0n, t1n in history_norm:
+            t0 = y_max * t0n
+            t1 = (y_max * t1n) / x_max
+            writer.writerow([it, t0, t1])
 
 if __name__ == "__main__":
     # Load the dataset
     data = pd.read_csv('data.csv')
     x = data['km'].tolist()
     y = data['price'].tolist()
-    print("Theta0 : ", theta0)
 
     # Initialize parameters
     theta0 = 0.0
@@ -56,6 +74,15 @@ if __name__ == "__main__":
     learning_rate = 0.1  # Small step size
     iterations = 1000  # Number of iterations
 
-    # Perform gradient descent
-    theta0, theta1 = gradient_descent(x, y, theta0, theta1, learning_rate, iterations)
-    print(f"Optimized Theta0 (Intercept): {theta0}, Theta1 (Slope): {theta1}")
+    # Train
+    theta0_norm, theta1_norm, history_norm = gradient_descent(x, y, theta0, theta1, learning_rate, iterations)
+
+    # Convert final thetas to original scale and save the model
+    x_max, y_max = max(x), max(y)
+    theta0_final = y_max * theta0_norm
+    theta1_final = (y_max * theta1_norm) / x_max
+    print(f"Optimized Theta0 (Intercept): {theta0_final}, Theta1 (Slope): {theta1_final}")
+    save_model('model.txt', theta0_final, theta1_final)
+
+    # Save training history (original scale) for plotting in predict.py
+    save_history_csv('training_history.csv', history_norm, x_max, y_max)
